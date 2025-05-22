@@ -17,21 +17,21 @@
           class="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-white/10"
           :class="{ 'bg-white/10 font-bold': $route.path === '/admin/service' }"
         >
-          <span>Services</span>
+          <span>Manage Services</span>
         </router-link>
   
         <router-link
-          to="/admin/manageCs"
+          to="/admin/manage-cs"
           class="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-white/10"
-          :class="{ 'bg-white/10 font-bold': $route.path === '/admin/manageCs' }"
+          :class="{ 'bg-white/10 font-bold': $route.path === '/admin/manage-cs' }"
         >
           <span>Manage CS</span>
         </router-link>
   
         <router-link
-          to="/admin/manageUser"
+          to="/admin/manage-user"
           class="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-white/10"
-          :class="{ 'bg-white/10 font-bold': $route.path === '/admin/manageUser' }"
+          :class="{ 'bg-white/10 font-bold': $route.path === '/admin/manage-user' }"
         >
           <span>Manage User</span>
         </router-link>

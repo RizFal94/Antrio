@@ -1,4 +1,5 @@
 <template>
+  <Navigation/>
     <div class="text-center mt-10">
       <h1 class="text-3xl font-semibold mb-6">Nomor Antrian</h1>
   
@@ -10,6 +11,7 @@
         <p class="mt-2 text-sm text-gray-500">Silakan menunggu<br />Hingga nomor antrian anda dipanggil</p>
         <p class="mt-3 font-semibold">Terima Kasih</p>
       </div>
+      <br>
   
       <button @click="selesai" class="bg-green-600 text-white px-6 py-2 rounded mt-6 hover:bg-green-700">
         Selesai
@@ -19,6 +21,7 @@
   
 <script setup>
     import { useRoute, useRouter } from 'vue-router'
+    import Navigation from '@/components/Navigation.vue'
     
     const route = useRoute()
     const router = useRouter()
