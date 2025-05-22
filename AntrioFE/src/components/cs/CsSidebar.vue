@@ -43,36 +43,60 @@
         <span>Logout</span>
       </button>
     </nav>
-
   </div>
 </template>
 
 <script setup>
-  import { onMounted, ref, computed } from 'vue'
-  import { useRouter } from 'vue-router'
-  import axios from 'axios'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const router = useRouter()
-  const user = ref([])
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+const router = useRouter()
+const user = ref({})
 
-  const getUser = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}/me`)
-      user.value = response.data
-    } catch (error) {
-      console.error('Gagal mengambil user:', error)
-    }
+const getUser = async () => {
+  const token = localStorage.getItem('access_token')
+  if (!token) {
+    router.push('/login')
+    return
   }
 
-  const handleLogout = () => {
-    axios.post(`${baseUrl}/logout`).then(() => {
-      router.push('login')
+  try {
+    const response = await axios.get(`${baseUrl}/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     })
+
+    user.value = response.data
+  } catch (error) {
+    console.error('Gagal mengambil user:', error)
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_role')
+    router.push('/login')
   }
+}
 
-  onMounted(() => {
-    getUser()
-  })
+const handleLogout = async () => {
+  try {
+    const token = localStorage.getItem('access_token')
+
+    await axios.post(`${baseUrl}/logout`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_role')
+    router.push('/login')
+  } catch (error) {
+    console.error('Logout gagal:', error)
+  }
+}
+
+onMounted(() => {
+  getUser()
+})
 </script>
-

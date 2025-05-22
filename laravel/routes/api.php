@@ -24,11 +24,11 @@ Route::prefix('admin')->group(function () {
     Route::delete('/service/{id}', [AdminController::class, 'deleteService']);
 });
 
-
 //cs
 Route::prefix('customer-service')->group(function () {
     Route::get('/all', [CustomerServiceController::class, 'showCustomerServices']);
     Route::post('/aktifkan/{id}', [CustomerServiceController::class, 'aktifkan'])->middleware('auth:sanctum');
+    Route::post('/non-aktifkan/{id}', [CustomerServiceController::class, 'nonaktifkan'])->middleware('auth:sanctum');
     Route::get('/antrian/berikutnya', [CustomerServiceController::class, 'ambilBerikutnya']);
     Route::post('/antrian/skip/{id}', [CustomerServiceController::class, 'skip']);
     Route::post('/antrian/selesai/{id}', [CustomerServiceController::class, 'selesai']);

@@ -17,28 +17,61 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'home', component: HomeView },
-    { path: '/antrian', name: 'antrian-detail', component: AntrianDetailView }, 
-    
+    { path: '/antrian', name: 'antrian-detail', component: AntrianDetailView },
+
     { path: '/login', name: 'login', component: LoginView },
     { path: '/register', name: 'register', component: RegisterView },
-    { path: '/cs', component: CsHomeView,
+
+    {
+      path: '/cs',
+      component: CsHomeView,
+      meta: { requiresAuth: true, role: 'cs' },
       children: [
-        { path: 'antrian', name: 'CsAntrean', component: CsAntrean, },
-        { path: 'action', name: 'CsAction', component: CsAction, },
-        { path: 'meja', name: 'CsMeja', component: CsMeja, },
-        { path: '', redirect: '/cs/antrian', },
-      ],
+        { path: 'antrian', name: 'CsAntrean', component: CsAntrean },
+        { path: 'action', name: 'CsAction', component: CsAction },
+        { path: 'meja', name: 'CsMeja', component: CsMeja },
+        { path: '', name: 'CsDefault', redirect: { name: 'CsAntrean' } },
+      ]
     },
-    { path: '/admin', component: AdminHomeView,
+
+    {
+      path: '/admin',
+      component: AdminHomeView,
+      meta: { requiresAuth: true, role: 'admin' },
       children: [
-        { path: 'antrian', name: 'AdminAntrean', component: AdminAntrean, },
-        { path: 'service', name: 'AdminService', component: AdminService, },
-        { path: 'manage-cs', name: 'AdminManageCs', component: AdminManageCs, },
-        { path: 'manage-user', name: 'AdminUser', component: AdminUser, },
-        { path: '', redirect: '/admin/service', },
-      ],
+        { path: 'antrian', name: 'AdminAntrean', component: AdminAntrean },
+        { path: 'service', name: 'AdminService', component: AdminService },
+        { path: 'manage-cs', name: 'AdminManageCs', component: AdminManageCs },
+        { path: 'manage-user', name: 'AdminUser', component: AdminUser },
+        { path: '', name: 'AdminDefault', redirect: { name: 'AdminService' } },
+      ]
     },
-  ],
+  ]
+})
+
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const token = localStorage.getItem('access_token')
+  const userRole = localStorage.getItem('user_role')
+
+  if ((to.name === 'login' || to.name === 'register') && token) {
+    if (userRole === 'admin') return next({ name: 'AdminService' })
+    if (userRole === 'cs') return next({ name: 'CsAntrean' })
+    return next({ name: 'home' })
+  }
+
+  if (requiresAuth) {
+    if (!token || !userRole) {
+      return next({ name: 'login' })
+    }
+
+    if (to.meta.role && to.meta.role !== userRole) {
+      return next({ name: 'login' })
+    }
+  }
+
+  next()
 })
 
 export default router

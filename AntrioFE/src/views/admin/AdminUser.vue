@@ -8,6 +8,7 @@
             <th class="py-3 px-4 text-left">ID</th>
             <th class="py-3 px-4 text-left">Nama</th>
             <th class="py-3 px-4 text-left">Email</th>
+            <th class="py-3 px-4 text-left">Role</th>
           </tr>
         </thead>
         <tbody>
@@ -19,6 +20,7 @@
             <td class="py-2 px-4">{{ user.id }}</td>
             <td class="py-2 px-4">{{ user.name }}</td>
             <td class="py-2 px-4">{{ user.email }}</td>
+            <td class="py-2 px-4">{{ user.role }}</td>
           </tr>
         </tbody>
       </table>

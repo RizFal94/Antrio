@@ -17,6 +17,7 @@
           <tr>
             <th class="py-3 px-4 text-left">ID</th>
             <th class="py-3 px-4 text-left">Nama Layanan</th>
+            <th class="py-3 px-4 text-left">Prefix</th>
             <th class="py-3 px-4 text-left">Aksi</th>
           </tr>
         </thead>
@@ -28,6 +29,7 @@
           >
             <td class="py-2 px-4">{{ service.id }}</td>
             <td class="py-2 px-4">{{ service.service }}</td>
+            <td class="py-2 px-4">{{ service.prefix }}</td>
             <td class="py-2 px-4 space-x-2">
               <button
                 class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition"

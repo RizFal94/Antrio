@@ -7,17 +7,19 @@
         <input
           id="email"
           type="email"
-          v-model="email" required
+          v-model="email"
+          required
           placeholder="email kamu"
           class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      <div>
+      <div class="mb-12">
         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
         <input
           id="password"
           type="password"
-          v-model="password" required
+          v-model="password"
+          required
           placeholder="password"
           class="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
@@ -27,7 +29,8 @@
         {{ errorMessage }}
       </div>
 
-      <button type="submit"
+      <button
+        type="submit"
         class="w-full py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition"
       >
         Login
@@ -37,41 +40,51 @@
 </template>
 
 <script setup>
-  import router from '@/router';
-  import { ref } from 'vue'
-  import axios from 'axios'
+import router from '@/router';
+import { ref } from 'vue';
+import axios from 'axios';
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  const email = ref('')
-  const password = ref('')
-  const errorMessage = ref('')
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
 
-  const handleLogin = async () => {
-    errorMessage.value = ''
+const handleLogin = async () => {
+  errorMessage.value = '';
 
-    try {
-      const response = await axios.post(`${baseUrl}/login`, {
-        email: email.value,
-        password: password.value
-      })
+  try {
+    const response = await axios.post(`${baseUrl}/login`, {
+      email: email.value,
+      password: password.value,
+    });
 
-      if (response.status === 200 && response.data.access_token) {
-        console.log('Login success:', response.data)
+    if (response.status === 200 && response.data.access_token) {
+      const token = response.data.access_token;
+      const role = response.data.user.role;
 
-        localStorage.setItem('token', response.data.access_token)
+      // Simpan ke localStorage
+      localStorage.setItem('access_token', token);
+      localStorage.setItem('user_role', role);
 
-        router.push({ name: 'CsAntrean' })
+      // Redirect berdasarkan role
+      if (role === 'admin') {
+        router.push({ name: 'AdminService' });
+      } else if (role === 'cs') {
+        router.push({ name: 'CsAntrean' });
       } else {
-        errorMessage.value = 'Login gagal. Coba lagi.'
+        errorMessage.value = 'Role tidak dikenali.';
       }
-    } catch (error) {
-      console.error(error)
-      if (error.response) {
-        errorMessage.value = error.response.data.message || 'Login gagal.'
-      } else {
-        errorMessage.value = 'Terjadi kesalahan jaringan.'
-      }
+    } else {
+      errorMessage.value = 'Login gagal. Coba lagi.';
+    }
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+      errorMessage.value = error.response.data.message || 'Login gagal.';
+    } else {
+      errorMessage.value = 'Terjadi kesalahan jaringan.';
     }
   }
+};
 </script>

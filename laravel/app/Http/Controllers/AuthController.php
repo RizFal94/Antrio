@@ -22,6 +22,9 @@ class AuthController extends Controller
             ]);
 
             $data['password'] = Hash::make($data['password']);
+
+            $data['role'] = 'cs';
+
             $user = User::create($data);
 
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -55,8 +58,14 @@ class AuthController extends Controller
             return response()->json([
                 "message" => "Login Success",
                 "access_token" => $token,
-                "token_type" => "Bearer"
+                "token_type" => "Bearer",
+                "user" => [
+                    "name" => $user->name,
+                    "email" => $user->email,
+                    "role" => $user->role
+                ]
             ], 200);
+            
         } catch (Exception $error) {
             return response()->json(["message" => $error->getMessage()], 400);
         }
@@ -73,6 +82,7 @@ class AuthController extends Controller
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
+            'role' => $user->role,
         ]);
     }
 

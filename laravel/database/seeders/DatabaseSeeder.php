@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Service;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,16 +16,53 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Service::create(['service' => 'SKT Kelompok']);
-        // Service::create(['service' => 'Sertifikasi CBIB/CPIB']);
-        // Service::create(['service' => 'Fasilitasi Penerbitan KUSUKA']);
-        // Service::create(['service' => 'Fasilitasi Penerbitan Dokumen Pas Kapal Kecil']);
-        // Service::create(['service' => 'Pengajuan Kuota BBL']);
-        // Service::create(['service' => 'Penerbitan SKAB']);
+        // Seed User
+        User::create([
+            'name' => 'Ahmad Rizqi Satriany',
+            'email' => 'admin@antrio.com',
+            'password' => Hash::make('admin'),
+            'role' => 'admin'
+        ]);
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        User::create([
+            'name' => 'Lukmanul Karim',
+            'email' => 'lukman@antrio.com',
+            'password' => Hash::make('lukman'),
+            'role' => 'cs'
+        ]);
+
+        // Seed Services
+        $services = [
+            ['service' => 'Setor/Tarik Tunai', 'prefix' => 'ST'],
+            ['service' => 'Transfer & Pembayaran', 'prefix' => 'TP'],
+            ['service' => 'Penukaran Uang', 'prefix' => 'PU'],
+            ['service' => 'Buka Rekening', 'prefix' => 'BR'],
+            ['service' => 'Kartu & E-Banking', 'prefix' => 'KE'],
+            ['service' => 'Informasi & Keluhan', 'prefix' => 'IK'],
+        ];
+
+        foreach ($services as $item) {
+            DB::table('services')->insert([
+                'service' => $item['service'],
+                'prefix' => $item['prefix'],
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+
+        // Seed Customer Services
+        $servicesFromDb = DB::table('services')->get();
+
+        foreach ($servicesFromDb as $service) {
+            DB::table('customer_services')->insert([
+                'service_id' => $service->id,
+                'user_id' => null,
+                'name' => 'CS ' . $service->service,
+                'prefix' => $service->prefix,
+                'status' => false,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
     }
 }

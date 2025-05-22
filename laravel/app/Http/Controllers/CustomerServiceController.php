@@ -62,19 +62,57 @@ class CustomerServiceController extends Controller
     {
         $user = Auth::user();
 
+        // Cek apakah CS yang dimaksud ada
         $customerService = CustomerService::findOrFail($id);
 
+        // Cek apakah CS ini sudah aktif
         if ($customerService->status) {
             return response()->json(['message' => 'Customer service sudah aktif.'], 400);
         }
 
+        // Nonaktifkan semua CS lain yang sebelumnya aktif untuk user ini
+        CustomerService::where('user_id', $user->id)
+            ->where('status', true)
+            ->update([
+                'user_id' => null,
+                'status' => false,
+            ]);
+
+        // Aktifkan CS yang dimaksud untuk user saat ini
         $customerService->update([
             'user_id' => $user->id,
             'status' => true,
         ]);
 
-        return response()->json(['message' => 'Customer service berhasil diaktifkan.']);
+        return response()->json([
+            'message' => 'Customer service berhasil diaktifkan.',
+            'data' => $customerService->only(['id', 'name', 'prefix', 'status', 'user_id'])
+        ]);
     }
+
+    // Menonaktifkan customer service berdasarkan ID
+    public function nonaktifkan($id)
+{
+    $user = Auth::user();
+
+    $customerService = CustomerService::findOrFail($id);
+
+    // Pastikan CS yang dimaksud dimiliki oleh user yang sedang login
+    if ($customerService->user_id !== $user->id) {
+        return response()->json(['message' => 'Anda tidak memiliki akses untuk menonaktifkan CS ini.'], 403);
+    }
+
+    // Nonaktifkan CS
+    $customerService->update([
+        'user_id' => null,
+        'status' => false,
+    ]);
+
+    return response()->json([
+        'message' => 'Customer service berhasil dinonaktifkan.',
+        'data' => $customerService->only(['id', 'name', 'prefix', 'status', 'user_id']),
+    ]);
+}
 
     // Ambil antrian berikutnya (yang belum terlayani dan tidak diskip)
     public function ambilBerikutnya()
