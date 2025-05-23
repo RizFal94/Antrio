@@ -31,6 +31,13 @@ class DatabaseSeeder extends Seeder
             'role' => 'cs'
         ]);
 
+        User::create([
+            'name' => 'Andi oioi',
+            'email' => 'andi@antrio.com',
+            'password' => Hash::make('andi'),
+            'role' => 'cs'
+        ]);
+
         // Seed Services
         $services = [
             ['service' => 'Setor/Tarik Tunai', 'prefix' => 'ST'],

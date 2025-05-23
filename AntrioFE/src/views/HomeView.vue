@@ -55,9 +55,11 @@ const kodeAntrian = ref(null)
 
 const klikService = (service) => {
   axios
-    .post(`${baseUrl}/ambil-antrian`, {
-      service_id: service.id,
-    })
+    .post(
+      `${baseUrl}/ambil-antrian`,
+      { service_id: service.id },
+      { headers: { 'Content-Type': 'application/json' } }
+    )
     .then((response) => {
       router.push({
         name: 'antrian-detail',

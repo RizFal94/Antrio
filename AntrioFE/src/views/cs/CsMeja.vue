@@ -71,16 +71,25 @@
   
   const aktifkan = async (id) => {
     try {
-      await axios.post(`${baseUrl}/customer-service/aktifkan/${id}`, null, {
+      const response = await axios.post(`${baseUrl}/customer-service/aktifkan/${id}`, null, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
+
+      // Ambil user_id dari response dan simpan ke localStorage
+      const userId = response.data?.data?.user_id
+      if (userId) {
+        localStorage.setItem('user_id', userId)
+        console.log('user_id disimpan:', userId)
+      }
+
       await fetchCustomerServices()
     } catch (error) {
       console.error('Gagal mengaktifkan CS:', error.response?.data?.message || error.message)
     }
   }
+
 
   const nonaktifkan = async (id) => {
     try {

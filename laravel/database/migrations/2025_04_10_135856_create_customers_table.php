@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('customer_service_id')->constrained()->onDelete('cascade');
             $table->date('tanggal');
             $table->integer('urutan');
-            $table->boolean('terlayani')->default(false);
+            $table->boolean('dilayani')->default(false);
             $table->boolean('skip')->default(false);
             $table->timestamps();
         });

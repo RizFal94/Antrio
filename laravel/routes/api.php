@@ -29,13 +29,14 @@ Route::prefix('customer-service')->group(function () {
     Route::get('/all', [CustomerServiceController::class, 'showCustomerServices']);
     Route::post('/aktifkan/{id}', [CustomerServiceController::class, 'aktifkan'])->middleware('auth:sanctum');
     Route::post('/non-aktifkan/{id}', [CustomerServiceController::class, 'nonaktifkan'])->middleware('auth:sanctum');
-    Route::get('/antrian/berikutnya', [CustomerServiceController::class, 'ambilBerikutnya']);
+    Route::post('/antrian/berikutnya', [CustomerServiceController::class, 'ambilBerikutnya'])->middleware('auth:sanctum');;
     Route::post('/antrian/skip/{id}', [CustomerServiceController::class, 'skip']);
     Route::post('/antrian/selesai/{id}', [CustomerServiceController::class, 'selesai']);
 });
 
 //umum
 Route::post('/ambil-antrian', [CustomerController::class, 'ambilAntrian']);
-Route::get('/antrian/belum-terlayani', [CustomerServiceController::class, 'showMenunggu']);
-Route::get('/antrian/sudah-terlayani', [CustomerServiceController::class, 'showSelesai']);
-Route::get('/antrian/dilewati', [CustomerServiceController::class, 'showSkip']);
+Route::get('/antrian/belum-terlayani', [CustomerController::class, 'showMenunggu']);
+Route::get('/antrian/dilayani', [CustomerController::class, 'showDilayani']);
+Route::get('/antrian/sudah-terlayani', [CustomerController::class, 'showSelesai']);
+Route::get('/antrian/dilewati', [CustomerController::class, 'showSkip']);

@@ -92,69 +92,117 @@ class CustomerServiceController extends Controller
 
     // Menonaktifkan customer service berdasarkan ID
     public function nonaktifkan($id)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $customerService = CustomerService::findOrFail($id);
+        $customerService = CustomerService::findOrFail($id);
 
-    // Pastikan CS yang dimaksud dimiliki oleh user yang sedang login
-    if ($customerService->user_id !== $user->id) {
-        return response()->json(['message' => 'Anda tidak memiliki akses untuk menonaktifkan CS ini.'], 403);
+        // Pastikan CS yang dimaksud dimiliki oleh user yang sedang login
+        if ($customerService->user_id !== $user->id) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk menonaktifkan CS ini.'], 403);
+        }
+
+        // Nonaktifkan CS
+        $customerService->update([
+            'user_id' => null,
+            'status' => false,
+        ]);
+
+        return response()->json([
+            'message' => 'Customer service berhasil dinonaktifkan.',
+            'data' => $customerService->only(['id', 'name', 'prefix', 'status', 'user_id']),
+        ]);
     }
 
-    // Nonaktifkan CS
-    $customerService->update([
-        'user_id' => null,
-        'status' => false,
-    ]);
-
-    return response()->json([
-        'message' => 'Customer service berhasil dinonaktifkan.',
-        'data' => $customerService->only(['id', 'name', 'prefix', 'status', 'user_id']),
-    ]);
-}
-
     // Ambil antrian berikutnya (yang belum terlayani dan tidak diskip)
-    public function ambilBerikutnya()
+    public function ambilBerikutnya(Request $request)
     {
+        $user = Auth::user(); // Ambil user berdasarkan token Authorization Bearer
+
+        if (!$user) {
+            return response()->json(['message' => 'User tidak terautentikasi.'], 401);
+        }
+
+        // Temukan CS aktif berdasarkan user login
+        $customerService = CustomerService::where('user_id', $user->id)
+                                        ->where('status', true)
+                                        ->first();
+
+        if (!$customerService) {
+            return response()->json(['message' => 'Customer Service belum aktif.'], 403);
+        }
+
+        $prefix = $customerService->prefix;
         $today = Carbon::today();
 
-        $berikutnya = Customer::whereDate('tanggal', $today)
-            ->where('terlayani', false)
+        // Ambil antrean dengan relasi ke CS yang sesuai prefix
+        $berikutnya = Customer::with(['layanan', 'customerService'])
+            ->whereDate('tanggal', $today)
+            ->where('dilayani', false)
             ->where('skip', false)
+            ->whereHas('customerService', function ($query) use ($prefix) {
+                $query->where('prefix', $prefix);
+            })
             ->orderBy('urutan')
             ->first();
 
         if (!$berikutnya) {
-            return response()->json(['message' => 'Tidak ada antrian tersedia']);
+            return response()->json(['message' => 'Tidak ada antrean tersedia.'], 404);
         }
 
+        // Tandai sebagai sudah dilayani
+        $berikutnya->update(['dilayani' => true]);
+
         return response()->json([
-            'message' => 'Antrian berikutnya ditemukan',
+            'message' => 'Antrian berikutnya ditemukan dan sedang dilayani',
             'data' => $berikutnya,
         ]);
     }
 
-
-    //Customer Service menekan tombol Skip
+    //tombol 'Skip'
     public function skip($id)
     {
+        $user = Auth::user();
+        $customerService = CustomerService::where('user_id', $user->id)->where('status', true)->first();
+
+        if (!$customerService) {
+            return response()->json(['message' => 'CS tidak aktif.'], 403);
+        }
+
         $antrian = Customer::findOrFail($id);
+
+        if ($antrian->prefix !== $customerService->prefix) {
+            return response()->json(['message' => 'Antrian ini bukan milik CS Anda.'], 403);
+        }
+
         $antrian->update([
-            'terlayani' => true,
+            'dilayani' => false,
             'skip' => true,
         ]);
 
-        return response()->json(['message' => 'Antrian diskip']);
+        return response()->json(['message' => 'Antrian berhasil diskip.']);
     }
 
 
-    //Customer Service menekan tombol 'Selesai'
+    //tombol 'Selesai'
     public function selesai($id)
     {
+        $user = Auth::user();
+        $customerService = CustomerService::where('user_id', $user->id)->where('status', true)->first();
+
+        if (!$customerService) {
+            return response()->json(['message' => 'CS tidak aktif.'], 403);
+        }
+
         $antrian = Customer::findOrFail($id);
+
+        if ($antrian->prefix !== $customerService->prefix) {
+            return response()->json(['message' => 'Antrian ini bukan milik CS Anda.'], 403);
+        }
+
         $antrian->update([
-            'terlayani' => true,
+            'dilayani' => true,
+            'skip' => true,
         ]);
 
         return response()->json(['message' => 'Layanan selesai']);

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CustomerService;
 
 class Customer extends Model
 {
@@ -16,17 +17,27 @@ class Customer extends Model
         'customer_service_id',
         'tanggal',
         'urutan',
-        'terlayani',
+        'dilayani',
         'skip',
     ];
 
     protected $casts = [
-        'terlayani' => 'boolean',
+        'dilayani' => 'boolean',
         'skip' => 'boolean',
     ];
 
     public function customerService()
     {
         return $this->belongsTo(CustomerService::class);
+    }
+
+    public function service()
+    {
+        return $this->customerService->service();
+    }
+
+    public function layanan()
+    {
+        return $this->belongsTo(Service::class, 'service_id');
     }
 }

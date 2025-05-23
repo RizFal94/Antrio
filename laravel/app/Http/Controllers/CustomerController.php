@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use Illuminate\Support\Carbon;
+use App\Models\CustomerService;
 
 class CustomerController extends Controller
 {
@@ -61,20 +62,9 @@ class CustomerController extends Controller
             return response()->json(['message' => 'service_id dibutuhkan'], 400);
         }
 
-        $prefixMap = [
-            1 => 'ST', // Setor/Tarik Tunai
-            2 => 'TP', // Transfer & Pembayaran
-            3 => 'PU', // Penukaran Uang
-            4 => 'BR', // Buka Rekening
-            5 => 'KE', // Kartu & E-Banking
-            6 => 'IK', // Informasi & Keluhan
-        ];
-
-        $prefix = $prefixMap[$serviceId] ?? 'XX';
-
         // Cari CS yang aktif untuk layanan ini
-        $cs = \App\Models\CustomerService::where('service_id', $serviceId)
-            ->where('status', 'aktif')
+        $cs = CustomerService::where('service_id', $serviceId)
+            ->where('status', true)
             ->first();
 
         if (!$cs) {
@@ -83,17 +73,26 @@ class CustomerController extends Controller
             ], 400);
         }
 
+        // Ambil prefix dari relasi ke tabel service
+        $prefix = $cs->service->prefix ?? 'XX';
+
+        // Hitung urutan baru
         $urutanTerakhir = Customer::whereDate('tanggal', $today)->max('urutan') ?? 0;
         $urutanBaru = $urutanTerakhir + 1;
 
+        // Buat antrian baru
         $antrianBaru = Customer::create([
             'tanggal' => $waktuSekarang,
             'urutan' => $urutanBaru,
-            'terlayani' => false,
+            'dilayani' => false,
             'skip' => false,
             'customer_service_id' => $cs->id,
         ]);
 
+        // Ambil data lengkap dengan relasi
+        $antrianBaru->load(['customerService.service']);
+
+        // Buat kode antrian
         $kodeAntrian = $prefix . str_pad($urutanBaru, 3, '0', STR_PAD_LEFT);
 
         return response()->json([
@@ -107,49 +106,74 @@ class CustomerController extends Controller
 
     public function showMenunggu()
     {
-        $today = Carbon::today();
+        $today = Carbon::today()->toDateString();
 
-        $antrian = Customer::whereDate('tanggal', $today)
-            ->where('terlayani', false)
+        $antrian = Customer::with(['customerService.service'])
+            ->whereDate('tanggal', $today)
+            ->where('dilayani', false)
             ->where('skip', false)
             ->orderBy('urutan')
             ->get();
 
         return response()->json([
-            'message' => 'Daftar antrian belum terlayani',
+            'message' => 'Daftar antrian belum dilayani',
+            'tanggal' => $today,
+            'data' => $antrian,
+        ]);
+    }
+
+    public function showDilayani()
+    {
+        $today = Carbon::today()->toDateString();
+
+        $antrian = Customer::with(['customerService.service'])
+            ->whereDate('tanggal', $today)
+            ->where('dilayani', true)
+            ->where('skip', false)
+            ->orderBy('urutan')
+            ->get();
+
+        return response()->json([
+            'message' => 'Daftar antrian yang sudah terlayani',
+            'tanggal' => $today,
             'data' => $antrian,
         ]);
     }
 
     public function showSelesai()
     {
-        $today = Carbon::today();
+        $today = Carbon::today()->toDateString();
 
-        $antrian = Customer::whereDate('tanggal', $today)
-            ->where('terlayani', true)
-            ->where('skip', false)
-            ->orderBy('urutan')
-            ->get();
-
-        return response()->json([
-            'message' => 'Daftar antrian yang sudah terlayani',
-            'data' => $antrian,
-        ]);
-    }
-
-    public function showSkip()
-    {
-        $today = Carbon::today();
-
-        $antrian = Customer::whereDate('tanggal', $today)
-            ->where('terlayani', true)
+        $antrian = Customer::with(['customerService.service'])
+            ->whereDate('tanggal', $today)
+            ->where('dilayani', true)
             ->where('skip', true)
             ->orderBy('urutan')
             ->get();
 
         return response()->json([
             'message' => 'Daftar antrian yang sudah terlayani',
+            'tanggal' => $today,
             'data' => $antrian,
         ]);
     }
+
+    public function showSkip()
+    {
+        $today = Carbon::today()->toDateString();
+
+        $antrian = Customer::with(['customerService.service'])
+            ->whereDate('tanggal', $today)
+            ->where('dilayani', false)
+            ->where('skip', true)
+            ->orderBy('urutan')
+            ->get();
+
+        return response()->json([
+            'message' => 'Daftar antrian yang sudah di-skip',
+            'tanggal' => $today,
+            'data' => $antrian,
+        ]);
+    }
+
 }
