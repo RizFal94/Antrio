@@ -77,7 +77,9 @@ class CustomerController extends Controller
         $prefix = $cs->service->prefix ?? 'XX';
 
         // Hitung urutan baru
-        $urutanTerakhir = Customer::whereDate('tanggal', $today)->max('urutan') ?? 0;
+        $urutanTerakhir = Customer::whereDate('tanggal', $today)
+            ->where('customer_service_id', $cs->id)
+            ->max('urutan') ?? 0;
         $urutanBaru = $urutanTerakhir + 1;
 
         // Buat antrian baru
@@ -93,7 +95,7 @@ class CustomerController extends Controller
         $antrianBaru->load(['customerService.service']);
 
         // Buat kode antrian
-        $kodeAntrian = $prefix . str_pad($urutanBaru, 3, '0', STR_PAD_LEFT);
+        $kodeAntrian = $prefix . ' ' . str_pad($urutanBaru, 3, '0', STR_PAD_LEFT);
 
         return response()->json([
             'message' => 'Berhasil ambil antrian',

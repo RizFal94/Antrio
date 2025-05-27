@@ -2,19 +2,20 @@
   <div class="p-6 max-w-xl mx-auto space-y-10">
     <div class="text-center space-y-4">
       <h1 class="text-green-600 text-3xl font-bold mb-12">ANTREAN SAAT INI</h1>
-      <div v-if="currentQueue" class="bg-white rounded-xl shadow-md p-6 space-y-2">
-        <div class="text-4xl font-bold text-green-600">
-          {{ currentQueue.customer_service?.service?.prefix || '' }}{{ currentQueue.urutan.toString().padStart(3, '0') }}
+      <div v-if="currentQueue" class="bg-white rounded-xl shadow-md p-6 space-y-2 max-w-sm mx-auto items-center justify-center min-h-[300px]">
+        <div class="text-4xl font-bold text-gray-800 m-8">
+          {{ (currentQueue.customer_service?.prefix || '') + ' ' + currentQueue.urutan.toString().padStart(3, '0') }}
         </div>
-        <div class="text-gray-800">ID: {{ currentQueue.id }}</div>
-        <div class="text-lg text-gray-700">
-          {{ currentQueue.customer_service?.service?.service ?? '-' }}
+        <div class="text-lg font-medium text-gray-700 mb-15">
+          {{ currentQueue.customer_service?.service ?? '-' }}
         </div>
-        <div class="text-sm text-gray-500">
+        <div class="text-sm text-gray-500 mb-8">
           Masuk: {{ formatTime(currentQueue.created_at) }}
         </div>
       </div>
-      <div v-else class="bg-gray-100 rounded-xl p-6 text-gray-500">
+      <div 
+        v-else class="bg-gray-100 rounded-xl p-6 text-gray-500 flex items-center justify-center min-h-[300px]"
+      >
         Tidak ada antrean yang sedang dilayani
       </div>
     </div>
@@ -28,7 +29,7 @@
         Skip
       </button>
       <button
-        @click="ambilBerikutnya"
+        @click="ambilBerikutnya" :disabled="currentQueue"
         class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
       >
         Antrean Berikutnya
@@ -51,6 +52,16 @@ import axios from 'axios'
 const baseUrl = import.meta.env.VITE_API_BASE_URL
 const currentQueue = ref(null)
 
+// Ambil antrean dari localStorage saat halaman dimuat
+const savedQueue = localStorage.getItem('currentQueue')
+if (savedQueue) {
+  try {
+    currentQueue.value = JSON.parse(savedQueue)
+  } catch {
+    localStorage.removeItem('currentQueue')
+  }
+}
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem('access_token')
   return {
@@ -70,11 +81,15 @@ const ambilBerikutnya = async () => {
 
     currentQueue.value = response.data.data
 
-    if (!currentQueue.value) {
+    if (currentQueue.value) {
+      // Simpan antrean ke localStorage
+      localStorage.setItem('currentQueue', JSON.stringify(currentQueue.value))
+    } else {
       alert('Tidak ada antrean berikutnya.')
     }
   } catch (error) {
     currentQueue.value = null
+    localStorage.removeItem('currentQueue') // Hapus jika gagal ambil antrean
     const msg = error.response?.data?.message || 'Gagal ambil antrean.'
     alert(msg)
     console.error(msg)
@@ -92,6 +107,7 @@ const skipQueue = async () => {
     )
     alert('Antrian berhasil di-skip.')
     currentQueue.value = null
+    localStorage.removeItem('currentQueue') // Hapus antrean dari localStorage
   } catch (error) {
     const msg = error.response?.data?.message || 'Gagal skip antrean.'
     alert(msg)
@@ -110,6 +126,7 @@ const completeQueue = async () => {
     )
     alert('Antrian berhasil diselesaikan.')
     currentQueue.value = null
+    localStorage.removeItem('currentQueue') // Hapus antrean dari localStorage
   } catch (error) {
     const msg = error.response?.data?.message || 'Gagal menyelesaikan antrean.'
     alert(msg)
@@ -117,7 +134,7 @@ const completeQueue = async () => {
   }
 }
 
-// Tambahan: fungsi formatTime
+// Fungsi bantu untuk menampilkan jam
 const formatTime = (datetimeString) => {
   const date = new Date(datetimeString)
   const hours = String(date.getHours()).padStart(2, '0')

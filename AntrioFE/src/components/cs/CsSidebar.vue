@@ -7,7 +7,18 @@
     <div class="flex items-center gap-4 px-6 py-4 border-b border-white/20">
       <div>
         <h3 class="text-lg font-semibold">{{ user.name }}</h3>
-        <p class="text-sm text-white/80">Customer Service</p>
+        <p class="text-sm text-white/80 mb-5">Customer Service</p>
+
+        <div v-if="user.active_cs" class="mt-2 text-sm text-white/90">
+          <p>Anda bekerja sebagai CS:</p>
+          <p class="font-bold">
+            {{ user.active_cs.name }}
+          </p>
+        </div>
+
+        <div v-else class="mt-2 text-sm text-white/70 italic">
+          Aktifkan CS terlebih dahulu!
+        </div>
       </div>
     </div>
 

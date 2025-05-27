@@ -8,6 +8,7 @@
               <th class="py-3 px-4 text-left">ID</th>
               <th class="py-3 px-4 text-left">Customer Service</th>
               <th class="py-3 px-4 text-left">Prefix</th>
+              <th class="py-3 px-4 text-left">User</th>
               <th class="py-3 px-4 text-left">Status</th>
             </tr>
           </thead>
@@ -20,6 +21,7 @@
               <td class="py-2 px-4">{{ cs.id }}</td>
               <td class="py-2 px-4">{{ cs.name }}</td>
               <td class="py-2 px-4">{{ cs.prefix }}</td>
+              <td class="py-2 px-4">{{ cs.user_name }}</td>
               <td class="py-2 px-4">
                 <span
                   :class="cs.status ? 'text-green-600 font-semibold' : 'text-gray-500'"
@@ -35,22 +37,24 @@
   </template>
   
 <script setup>
-  import { ref, onMounted } from 'vue'
-  import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  
-  const customerServices = ref([])
-  
-  const fetchCustomerServices = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}/customer-service/all`)
-      customerServices.value = response.data
-    } catch (error) {
-      console.error('Gagal memuat data customer service:', error)
-    }
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const customerServices = ref([])
+
+const fetchCustomerServices = async () => {
+  try {
+    const response = await axios.get(`${baseUrl}/customer-service/all`)
+    // Urutkan data berdasarkan id (ascending)
+    customerServices.value = response.data.sort((a, b) => a.id - b.id)
+  } catch (error) {
+    console.error('Gagal memuat data customer service:', error)
   }
-  
-  onMounted(fetchCustomerServices)
+}
+
+onMounted(fetchCustomerServices)
 </script>
+
   

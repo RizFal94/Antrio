@@ -71,7 +71,7 @@ const handleLogin = async () => {
       if (role === 'admin') {
         router.push({ name: 'AdminService' });
       } else if (role === 'cs') {
-        router.push({ name: 'CsAntrean' });
+        router.push({ name: 'CsMeja' });
       } else {
         errorMessage.value = 'Role tidak dikenali.';
       }

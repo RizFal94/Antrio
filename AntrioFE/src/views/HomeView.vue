@@ -3,8 +3,8 @@
 
   <div class="flex justify-center">
     <div class="flex flex-col items-center">
-      <h2 class="text-4xl font-medium mb-2">Selamat Datang</h2>
-      <h3 class="text-2xl font-normal text-green-500">Silahkan Pilih Layanan</h3>
+      <h2 class="text-2xl font-medium mb-2">Selamat Datang</h2>
+      <h3 class="text-1xl font-normal text-green-500">Silahkan Pilih Layanan</h3>
     </div>
   </div>
 
@@ -18,12 +18,14 @@
     >
       <div class="h-full flex flex-col justify-between bg-white">
         <!-- Gambar layanan -->
-        <img
-          v-if="service.image"
-          :src="`${baseUrl}/storage/${service.image}`"
-          alt="Gambar Layanan"
-          class="w-full h-36 object-cover"
-        />
+        <div class="h-48 w-full overflow-hidden">
+          <img
+            v-if="service.image"
+            :src="`${baseImageUrl}/storage/${service.image}`"
+            alt="Gambar Layanan"
+            class="w-full h-full object-cover"
+          />
+        </div>
         <div class="p-4 text-center bg-green-500">
           <h1 class="font-bold text-white text-lg">{{ service.service }}</h1>
         </div>
@@ -46,6 +48,7 @@ import axios from 'axios'
 
 const router = useRouter()
 const baseUrl = import.meta.env.VITE_API_BASE_URL
+const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL
 
 const formData = reactive({
   service: [],
@@ -79,9 +82,9 @@ const klikService = (service) => {
 
 onMounted(() => {
   axios
-    .get(`${baseUrl}/service`)
+    .get(`${baseUrl}/tampilkan-service`)
     .then((response) => {
-      formData.service = response.data.data
+      formData.service = response.data.data.sort((a, b) => a.id - b.id)
     })
     .catch((error) => {
       console.error('Error fetching services:', error)

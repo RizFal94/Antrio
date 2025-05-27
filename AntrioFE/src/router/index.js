@@ -27,10 +27,10 @@ const router = createRouter({
       component: CsHomeView,
       meta: { requiresAuth: true, role: 'cs' },
       children: [
-        { path: 'antrian', name: 'CsAntrean', component: CsAntrean },
-        { path: 'action', name: 'CsAction', component: CsAction },
         { path: 'meja', name: 'CsMeja', component: CsMeja },
-        { path: '', name: 'CsDefault', redirect: { name: 'CsAntrean' } },
+        { path: 'action', name: 'CsAction', component: CsAction },
+        { path: 'antrian', name: 'CsAntrean', component: CsAntrean },
+        { path: '', name: 'CsDefault', redirect: { name: 'CsMeja' } },
       ]
     },
 
@@ -39,10 +39,10 @@ const router = createRouter({
       component: AdminHomeView,
       meta: { requiresAuth: true, role: 'admin' },
       children: [
-        { path: 'antrian', name: 'AdminAntrean', component: AdminAntrean },
         { path: 'service', name: 'AdminService', component: AdminService },
         { path: 'manage-cs', name: 'AdminManageCs', component: AdminManageCs },
         { path: 'manage-user', name: 'AdminUser', component: AdminUser },
+        { path: 'antrian', name: 'AdminAntrean', component: AdminAntrean },
         { path: '', name: 'AdminDefault', redirect: { name: 'AdminService' } },
       ]
     },

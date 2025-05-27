@@ -82,7 +82,7 @@ const fetchData = async () => {
       endpoint = `${baseUrl}/antrian/dilayani`
       break
     case 'Selesai':
-      endpoint = `${baseUrl}/antrian/sudah-terlayani`
+      endpoint = `${baseUrl}/antrian/terlayani`
       break
     case 'Skip':
       endpoint = `${baseUrl}/antrian/dilewati`

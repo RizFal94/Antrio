@@ -10,35 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
-    {
-        try {
-            $request["email"] = strtolower($request["email"]);
-
-            $data = $request->validate([
-                "name" => ["required"],
-                "email" => ["required", "email", "unique:users"],
-                "password" => ["required", "confirmed"]
-            ]);
-
-            $data['password'] = Hash::make($data['password']);
-
-            $data['role'] = 'cs';
-
-            $user = User::create($data);
-
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                "message" => "Registrasi Berhasil",
-                "access_token" => $token,
-                "token_type" => "Bearer"
-            ], 201);
-        } catch (Exception $error) {
-            return response()->json(["message" => $error->getMessage()], 400);
-        }
-    }
-
     public function login(Request $request)
     {
         try {
@@ -79,17 +50,39 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
+        // Ambil CS yang aktif dari user (jika ada)
+        $activeCs = $user->customerService()->where('status', true)->first();
+
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,
+            'active_cs' => $activeCs ? [
+                'id' => $activeCs->id,
+                'name' => $activeCs->name,
+                'prefix' => $activeCs->prefix
+            ] : null
         ]);
     }
 
     public function logout(Request $request)
     {
         try {
-            $request->user()->currentAccessToken()->delete();
+            $user = $request->user();
+
+            // Nonaktifkan CS jika ada yang aktif
+            $cs = $user->customerService()->where('status', true)->first();
+
+            if ($cs) {
+                // Set status ke false dan hapus user_id
+                $cs->update([
+                    'status' => false,
+                    'user_id' => null
+                ]);
+            }
+
+            // Hapus token akses
+            $user->currentAccessToken()->delete();
 
             return response()->json(["message" => "Berhasil Logout"], 200);
         } catch (Exception $error) {

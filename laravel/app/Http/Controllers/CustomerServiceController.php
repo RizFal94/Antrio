@@ -52,10 +52,19 @@ class CustomerServiceController extends Controller
 
     public function showCustomerServices()
     {
-        $customerServices = CustomerService::select('id', 'name', 'prefix', 'status')->get();
+        $customerServices = CustomerService::with('user:id,name') // eager load user, cuma ambil id dan name
+            ->select('id', 'name', 'prefix', 'status', 'user_id') // pastikan user_id juga diambil
+            ->get();
+
+        // Tambahkan kolom user_name di collection
+        $customerServices->transform(function ($cs) {
+            $cs->user_name = $cs->user ? $cs->user->name : null;
+            unset($cs->user); // optional, hapus relasi user supaya response lebih ringkas
+            return $cs;
+        });
 
         return response()->json($customerServices);
-    } 
+    }
 
     // Mengaktifkan customer service berdasarkan ID
     public function aktifkan($id)
@@ -135,8 +144,10 @@ class CustomerServiceController extends Controller
         $prefix = $customerService->prefix;
         $today = Carbon::today();
 
-        // Ambil antrean dengan relasi ke CS yang sesuai prefix
-        $berikutnya = Customer::with(['layanan', 'customerService'])
+        // Ambil antrean yang belum dilayani dan tidak diskip dengan relasi customerService dan servicenya
+        $berikutnya = Customer::with([
+                'customerService.service', // eager load relasi ke service lewat customerService
+            ])
             ->whereDate('tanggal', $today)
             ->where('dilayani', false)
             ->where('skip', false)
@@ -155,7 +166,15 @@ class CustomerServiceController extends Controller
 
         return response()->json([
             'message' => 'Antrian berikutnya ditemukan dan sedang dilayani',
-            'data' => $berikutnya,
+            'data' => [
+                'id' => $berikutnya->id,
+                'urutan' => $berikutnya->urutan,
+                'created_at' => $berikutnya->created_at,
+                'customer_service' => [
+                    'prefix' => $berikutnya->customerService->prefix,
+                    'service' => $berikutnya->customerService->service->service ?? null
+                ]
+            ]
         ]);
     }
 
@@ -169,9 +188,9 @@ class CustomerServiceController extends Controller
             return response()->json(['message' => 'CS tidak aktif.'], 403);
         }
 
-        $antrian = Customer::findOrFail($id);
+        $antrian = Customer::with(['layanan', 'customerService'])->findOrFail($id);
 
-        if ($antrian->prefix !== $customerService->prefix) {
+        if ($antrian->customerService->prefix !== $customerService->prefix) {
             return response()->json(['message' => 'Antrian ini bukan milik CS Anda.'], 403);
         }
 
@@ -180,9 +199,11 @@ class CustomerServiceController extends Controller
             'skip' => true,
         ]);
 
-        return response()->json(['message' => 'Antrian berhasil diskip.']);
+        return response()->json([
+            'message' => 'Antrian berhasil diskip.',
+            'data' => $antrian,
+        ]);
     }
-
 
     //tombol 'Selesai'
     public function selesai($id)
@@ -194,9 +215,9 @@ class CustomerServiceController extends Controller
             return response()->json(['message' => 'CS tidak aktif.'], 403);
         }
 
-        $antrian = Customer::findOrFail($id);
+        $antrian = Customer::with(['layanan', 'customerService'])->findOrFail($id);
 
-        if ($antrian->prefix !== $customerService->prefix) {
+        if ($antrian->customerService->prefix !== $customerService->prefix) {
             return response()->json(['message' => 'Antrian ini bukan milik CS Anda.'], 403);
         }
 
@@ -205,7 +226,10 @@ class CustomerServiceController extends Controller
             'skip' => true,
         ]);
 
-        return response()->json(['message' => 'Layanan selesai']);
+        return response()->json([
+            'message' => 'Layanan selesai.',
+            'data' => $antrian,
+        ]);
     }
 
 }

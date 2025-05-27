@@ -23,18 +23,23 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('admin'),
             'role' => 'admin'
         ]);
-
         User::create([
             'name' => 'Lukmanul Karim',
             'email' => 'lukman@antrio.com',
             'password' => Hash::make('lukman'),
             'role' => 'cs'
         ]);
-
         User::create([
             'name' => 'Andi oioi',
             'email' => 'andi@antrio.com',
             'password' => Hash::make('andi'),
+            'role' => 'cs'
+        ]);
+
+        User::create([
+            'name' => 'Sakurajima Mai',
+            'email' => 'mai@antrio.com',
+            'password' => Hash::make('mai'),
             'role' => 'cs'
         ]);
 
