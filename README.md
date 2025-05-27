@@ -6,6 +6,7 @@ KONFIGURASI BACKEND:
 3. php artisan db:seed
 4. php artisan serve / run via Herd
 
+
 KONFIGURASI FRONTEND:
 1. npm install
 2. npm install vue-router
