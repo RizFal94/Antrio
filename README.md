@@ -1,6 +1,6 @@
 ini adalah aplikasi antrian online berbasis backend laravel dan frontend vue 3 dengan menggunakan REST API
 
-KONFIGURASI BACKEND:
+KONFIGURASI BACKEND (laravel):
 1. composer install
 2. npm install
 3. php artisan migrate
@@ -9,7 +9,7 @@ KONFIGURASI BACKEND:
 6. php artisan serve / run via Herd
 
 
-KONFIGURASI FRONTEND:
+KONFIGURASI FRONTEND (AntrioFE):
 1. npm install
 2. npm install vue-router
 3. npm install axios
