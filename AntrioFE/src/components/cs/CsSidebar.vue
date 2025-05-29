@@ -1,6 +1,7 @@
 <template>
   <div class="w-72 bg-green-600 text-white h-screen fixed top-0 left-0 flex flex-col">
-    <div class="text-center py-6 border-b border-white/20">
+    <div class="flex items-center justify-center gap-3 py-6 border-b border-white/20">
+      <img src="@/assets/logoAntrio.png" alt="Logo Antrio" class="h-8 w-8 object-contain" />
       <h1 class="text-2xl font-bold">ANTRIO</h1>
     </div>
 
@@ -28,7 +29,10 @@
         class="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-white/10"
         :class="{ 'bg-white/10 font-bold': $route.path === '/cs/meja' }"
       >
-        <span>Meja</span>
+        <span>
+          <i class="bi bi-briefcase-fill mr-2"></i>
+          Meja
+        </span>
       </router-link>
 
       <router-link
@@ -36,7 +40,10 @@
         class="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-white/10"
         :class="{ 'bg-white/10 font-bold': $route.path === '/cs/action' }"
       >
-        <span>Action</span>
+        <span>
+          <i class="bi bi-cursor-fill mr-2"></i>
+          Action
+        </span>
       </router-link>
 
       <router-link
@@ -44,14 +51,20 @@
         class="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-white/10"
         :class="{ 'bg-white/10 font-bold': $route.path === '/cs/antrian' }"
       >
-        <span>Antrean</span>
+        <span>
+          <i class="bi bi-chat-right-dots-fill mr-2"></i>
+          Antrean
+        </span>
       </router-link>
 
       <button
         class="flex items-center gap-3 px-4 py-2 rounded-md transition hover:bg-red-600 mt-auto"
         @click="handleLogout"
       >
-        <span>Logout</span>
+        <span>
+          <i class="bi bi-door-closed-fill mr-2"></i>
+          Logout
+        </span>
       </button>
     </nav>
   </div>

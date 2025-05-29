@@ -2,8 +2,7 @@
   <div class="p-6 max-w-5xl mx-auto">
     <h1 class="text-green-600 text-2xl font-bold mb-6">DAFTAR LAYANAN</h1>
 
-    <!-- Button tambah -->
-    <div class="mb-4">
+    <div class="mb-4 flex justify-end mr-10">
       <button
         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
         @click="bukaForm(null)"
@@ -12,15 +11,14 @@
       </button>
     </div>
 
-    <!-- Tabel layanan -->
     <div class="overflow-x-auto">
       <table class="min-w-full bg-white shadow-md rounded-xl">
         <thead class="bg-gray-100 text-gray-700">
           <tr>
             <th class="py-3 px-4 text-left">ID</th>
-            <th class="py-3 px-4 text-left">Nama Layanan</th>
-            <th class="py-3 px-4 text-left">Prefix</th>
-            <th class="py-3 px-4 text-left">Aksi</th>
+            <th class="py-3 px-4 text-left">NAMA LAYANAN</th>
+            <th class="py-3 px-4 text-left">PREFIX</th>
+            <th class="py-3 px-4 flex justify-end mr-20">AKSI</th>
           </tr>
         </thead>
         <tbody>
@@ -32,7 +30,7 @@
             <td class="py-2 px-4">{{ service.id }}</td>
             <td class="py-2 px-4">{{ service.service }}</td>
             <td class="py-2 px-4">{{ service.prefix }}</td>
-            <td class="py-2 px-4 space-x-2">
+            <td class="py-2 px-4 space-x-2 flex justify-end mr-10">
               <button
                 class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
                 @click="bukaForm(service)"
@@ -41,7 +39,7 @@
               </button>
               <button
                 class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-                @click="hapusService(service.id)"
+                @click="openDeleteConfirm(service)"
               >
                 Hapus
               </button>
@@ -51,10 +49,9 @@
       </table>
     </div>
 
-    <!-- Modal Form -->
     <div
       v-if="formTerbuka"
-      class="fixed inset-0 flex items-center justify-center z-50"
+      class="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
       style="background-color: rgba(0, 0, 0, 0.2);"
     >
       <div class="bg-white p-6 rounded-xl w-full max-w-lg">
@@ -119,6 +116,31 @@
         </form>
       </div>
     </div>
+
+    <div
+      v-if="showDeleteConfirm"
+      class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50"
+      style="background-color: rgba(0, 0, 0, 0.2);"
+    >
+      <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+        <p class="mb-4 text-lg">Apakah Anda yakin ingin menghapus layanan</p>
+        <strong>{{ selectedServiceToDelete?.service }}</strong> ?
+        <div class="flex justify-center gap-4 mt-4">
+          <button
+            @click="confirmDelete"
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition w-18"
+          >
+            Ya
+          </button>
+          <button
+            @click="cancelDelete"
+            class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition w-18"
+          >
+            Tidak
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -126,10 +148,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || '' // URL API
+const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
 
 const services = ref([])
 const formTerbuka = ref(false)
+const showDeleteConfirm = ref(false)
+const selectedServiceToDelete = ref(null)
+
 const formData = reactive({
   id: null,
   service: '',
@@ -182,14 +207,12 @@ const submitForm = async () => {
     if (formData.image) form.append('image', formData.image)
 
     if (formData.id) {
-      // Update existing service
-      form.append('_method', 'PUT') // Spoofing HTTP method
+      form.append('_method', 'PUT')
       await axios.post(`${baseUrl}/admin/update-service/${formData.id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('Layanan berhasil diupdate')
     } else {
-      // Create new service
       await axios.post(`${baseUrl}/admin/tambah-service`, form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
@@ -209,15 +232,26 @@ const submitForm = async () => {
   }
 }
 
-const hapusService = async (id) => {
-  if (!confirm('Apakah Anda yakin ingin menghapus layanan ini?')) return
+const openDeleteConfirm = (service) => {
+  selectedServiceToDelete.value = service
+  showDeleteConfirm.value = true
+}
+
+const cancelDelete = () => {
+  selectedServiceToDelete.value = null
+  showDeleteConfirm.value = false
+}
+
+const confirmDelete = async () => {
   try {
-    await axios.delete(`${baseUrl}/admin/hapus-service/${id}`)
+    await axios.delete(`${baseUrl}/admin/hapus-service/${selectedServiceToDelete.value.id}`)
     alert('Layanan berhasil dihapus')
     fetchServices()
   } catch (err) {
     alert('Gagal menghapus layanan')
     console.error(err)
+  } finally {
+    cancelDelete()
   }
 }
 

@@ -32,7 +32,7 @@
         @click="ambilBerikutnya" :disabled="currentQueue"
         class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
       >
-        Antrean Berikutnya
+        Layani Antrean
       </button>
       <button
         @click="completeQueue"
@@ -52,7 +52,6 @@ import axios from 'axios'
 const baseUrl = import.meta.env.VITE_API_BASE_URL
 const currentQueue = ref(null)
 
-// Ambil antrean dari localStorage saat halaman dimuat
 const savedQueue = localStorage.getItem('currentQueue')
 if (savedQueue) {
   try {
@@ -82,14 +81,13 @@ const ambilBerikutnya = async () => {
     currentQueue.value = response.data.data
 
     if (currentQueue.value) {
-      // Simpan antrean ke localStorage
       localStorage.setItem('currentQueue', JSON.stringify(currentQueue.value))
     } else {
       alert('Tidak ada antrean berikutnya.')
     }
   } catch (error) {
     currentQueue.value = null
-    localStorage.removeItem('currentQueue') // Hapus jika gagal ambil antrean
+    localStorage.removeItem('currentQueue')
     const msg = error.response?.data?.message || 'Gagal ambil antrean.'
     alert(msg)
     console.error(msg)
@@ -107,7 +105,7 @@ const skipQueue = async () => {
     )
     alert('Antrian berhasil di-skip.')
     currentQueue.value = null
-    localStorage.removeItem('currentQueue') // Hapus antrean dari localStorage
+    localStorage.removeItem('currentQueue')
   } catch (error) {
     const msg = error.response?.data?.message || 'Gagal skip antrean.'
     alert(msg)
@@ -126,7 +124,7 @@ const completeQueue = async () => {
     )
     alert('Antrian berhasil diselesaikan.')
     currentQueue.value = null
-    localStorage.removeItem('currentQueue') // Hapus antrean dari localStorage
+    localStorage.removeItem('currentQueue')
   } catch (error) {
     const msg = error.response?.data?.message || 'Gagal menyelesaikan antrean.'
     alert(msg)
@@ -134,7 +132,6 @@ const completeQueue = async () => {
   }
 }
 
-// Fungsi bantu untuk menampilkan jam
 const formatTime = (datetimeString) => {
   const date = new Date(datetimeString)
   const hours = String(date.getHours()).padStart(2, '0')

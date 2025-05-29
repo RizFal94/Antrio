@@ -6,10 +6,10 @@
           <thead class="bg-gray-100 text-gray-700">
             <tr>
               <th class="py-3 px-4 text-left">ID</th>
-              <th class="py-3 px-4 text-left">Customer Service</th>
-              <th class="py-3 px-4 text-left">Prefix</th>
-              <th class="py-3 px-4 text-left">User</th>
-              <th class="py-3 px-4 text-left">Status</th>
+              <th class="py-3 px-4 text-left">CUSTOMER SERVICE</th>
+              <th class="py-3 px-4 text-left">PREFIX</th>
+              <th class="py-3 px-4 text-left">USER</th>
+              <th class="py-3 px-4 text-left">STATUS</th>
             </tr>
           </thead>
           <tbody>
@@ -47,7 +47,6 @@ const customerServices = ref([])
 const fetchCustomerServices = async () => {
   try {
     const response = await axios.get(`${baseUrl}/customer-service/all`)
-    // Urutkan data berdasarkan id (ascending)
     customerServices.value = response.data.sort((a, b) => a.id - b.id)
   } catch (error) {
     console.error('Gagal memuat data customer service:', error)

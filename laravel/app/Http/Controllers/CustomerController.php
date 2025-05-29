@@ -51,7 +51,7 @@ class CustomerController extends Controller
         //
     }
 
-    //Buat antrian baru (untuk pengguna umum tanpa login)
+    //Buat antrian baru (umum)
     public function ambilAntrian(Request $request)
     {
         $today = Carbon::today();
@@ -62,7 +62,6 @@ class CustomerController extends Controller
             return response()->json(['message' => 'service_id dibutuhkan'], 400);
         }
 
-        // Cari CS yang aktif untuk layanan ini
         $cs = CustomerService::where('service_id', $serviceId)
             ->where('status', true)
             ->first();
@@ -73,16 +72,15 @@ class CustomerController extends Controller
             ], 400);
         }
 
-        // Ambil prefix dari relasi ke tabel service
-        $prefix = $cs->service->prefix ?? 'XX';
+        $csIds = CustomerService::where('service_id', $serviceId)->pluck('id');
 
-        // Hitung urutan baru
         $urutanTerakhir = Customer::whereDate('tanggal', $today)
-            ->where('customer_service_id', $cs->id)
+            ->whereIn('customer_service_id', $csIds)
             ->max('urutan') ?? 0;
         $urutanBaru = $urutanTerakhir + 1;
 
-        // Buat antrian baru
+        $prefix = $cs->service->prefix ?? 'XX';
+
         $antrianBaru = Customer::create([
             'tanggal' => $waktuSekarang,
             'urutan' => $urutanBaru,
@@ -91,14 +89,12 @@ class CustomerController extends Controller
             'customer_service_id' => $cs->id,
         ]);
 
-        // Ambil data lengkap dengan relasi
         $antrianBaru->load(['customerService.service']);
 
-        // Buat kode antrian
         $kodeAntrian = $prefix . ' ' . str_pad($urutanBaru, 3, '0', STR_PAD_LEFT);
 
         return response()->json([
-            'message' => 'Berhasil ambil antrian',
+            'message' => 'Berhasil mengambil antrian',
             'tanggal' => $waktuSekarang->format('Y-m-d'),
             'jam' => $waktuSekarang->format('H:i:s'),
             'kode_antrian' => $kodeAntrian,

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerServiceController extends Controller
 {
-    //1. menapilkan semua cs
+    //menapilkan semua cs
     public function index()
     {
         return response()->json(CustomerService::all());
@@ -52,14 +52,13 @@ class CustomerServiceController extends Controller
 
     public function showCustomerServices()
     {
-        $customerServices = CustomerService::with('user:id,name') // eager load user, cuma ambil id dan name
-            ->select('id', 'name', 'prefix', 'status', 'user_id') // pastikan user_id juga diambil
+        $customerServices = CustomerService::with('user:id,name')
+            ->select('id', 'name', 'prefix', 'status', 'user_id')
             ->get();
 
-        // Tambahkan kolom user_name di collection
         $customerServices->transform(function ($cs) {
             $cs->user_name = $cs->user ? $cs->user->name : null;
-            unset($cs->user); // optional, hapus relasi user supaya response lebih ringkas
+            unset($cs->user);
             return $cs;
         });
 
@@ -71,15 +70,12 @@ class CustomerServiceController extends Controller
     {
         $user = Auth::user();
 
-        // Cek apakah CS yang dimaksud ada
         $customerService = CustomerService::findOrFail($id);
 
-        // Cek apakah CS ini sudah aktif
         if ($customerService->status) {
             return response()->json(['message' => 'Customer service sudah aktif.'], 400);
         }
 
-        // Nonaktifkan semua CS lain yang sebelumnya aktif untuk user ini
         CustomerService::where('user_id', $user->id)
             ->where('status', true)
             ->update([
@@ -87,7 +83,6 @@ class CustomerServiceController extends Controller
                 'status' => false,
             ]);
 
-        // Aktifkan CS yang dimaksud untuk user saat ini
         $customerService->update([
             'user_id' => $user->id,
             'status' => true,
@@ -99,19 +94,16 @@ class CustomerServiceController extends Controller
         ]);
     }
 
-    // Menonaktifkan customer service berdasarkan ID
     public function nonaktifkan($id)
     {
         $user = Auth::user();
 
         $customerService = CustomerService::findOrFail($id);
 
-        // Pastikan CS yang dimaksud dimiliki oleh user yang sedang login
         if ($customerService->user_id !== $user->id) {
             return response()->json(['message' => 'Anda tidak memiliki akses untuk menonaktifkan CS ini.'], 403);
         }
 
-        // Nonaktifkan CS
         $customerService->update([
             'user_id' => null,
             'status' => false,
@@ -123,30 +115,27 @@ class CustomerServiceController extends Controller
         ]);
     }
 
-    // Ambil antrian berikutnya (yang belum terlayani dan tidak diskip)
     public function ambilBerikutnya(Request $request)
     {
-        $user = Auth::user(); // Ambil user berdasarkan token Authorization Bearer
+        $user = Auth::user();
 
         if (!$user) {
             return response()->json(['message' => 'User tidak terautentikasi.'], 401);
         }
 
-        // Temukan CS aktif berdasarkan user login
         $customerService = CustomerService::where('user_id', $user->id)
                                         ->where('status', true)
                                         ->first();
 
         if (!$customerService) {
-            return response()->json(['message' => 'Customer Service belum aktif.'], 403);
+            return response()->json(['message' => 'aktifkan customer service terlebih dahulu.'], 403);
         }
 
         $prefix = $customerService->prefix;
         $today = Carbon::today();
 
-        // Ambil antrean yang belum dilayani dan tidak diskip dengan relasi customerService dan servicenya
         $berikutnya = Customer::with([
-                'customerService.service', // eager load relasi ke service lewat customerService
+                'customerService.service', 
             ])
             ->whereDate('tanggal', $today)
             ->where('dilayani', false)
@@ -161,7 +150,6 @@ class CustomerServiceController extends Controller
             return response()->json(['message' => 'Tidak ada antrean tersedia.'], 404);
         }
 
-        // Tandai sebagai sudah dilayani
         $berikutnya->update(['dilayani' => true]);
 
         return response()->json([
@@ -178,14 +166,13 @@ class CustomerServiceController extends Controller
         ]);
     }
 
-    //tombol 'Skip'
     public function skip($id)
     {
         $user = Auth::user();
         $customerService = CustomerService::where('user_id', $user->id)->where('status', true)->first();
 
         if (!$customerService) {
-            return response()->json(['message' => 'CS tidak aktif.'], 403);
+            return response()->json(['message' => 'aktifkan customer service terlebih dahulu.'], 403);
         }
 
         $antrian = Customer::with(['layanan', 'customerService'])->findOrFail($id);
@@ -205,14 +192,13 @@ class CustomerServiceController extends Controller
         ]);
     }
 
-    //tombol 'Selesai'
     public function selesai($id)
     {
         $user = Auth::user();
         $customerService = CustomerService::where('user_id', $user->id)->where('status', true)->first();
 
         if (!$customerService) {
-            return response()->json(['message' => 'CS tidak aktif.'], 403);
+            return response()->json(['message' => 'aktifkan customer service terlebih dahulu.'], 403);
         }
 
         $antrian = Customer::with(['layanan', 'customerService'])->findOrFail($id);

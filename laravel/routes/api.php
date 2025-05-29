@@ -19,13 +19,13 @@ Route::prefix('admin')->group(function () {
     Route::get('/users', [AdminController::class, 'index']);
     Route::post('/tambah-user', [AdminController::class, 'addUser']);
     Route::delete('/hapus-user/{id}', [AdminController::class, 'deleteUser']);
+    Route::post('/tambah-service', [AdminController::class, 'storeService']);
+    Route::put('/update-service/{id}', [AdminController::class, 'updateService']);
+    Route::delete('/hapus-service/{id}', [AdminController::class, 'deleteService']);
     Route::get('/antrian/belum-terlayani', [AdminController::class, 'showMenunggu']);
     Route::get('/antrian/dilayani', [AdminController::class, 'showDilayani']);
     Route::get('/antrian/terlayani', [AdminController::class, 'showSelesai']);
     Route::get('/antrian/dilewati', [AdminController::class, 'showSkip']);
-    Route::post('/tambah-service', [AdminController::class, 'storeService']);
-    Route::put('/update-service/{id}', [AdminController::class, 'updateService']);
-    Route::delete('/hapus-service/{id}', [AdminController::class, 'deleteService']);
 });
 
 //cs

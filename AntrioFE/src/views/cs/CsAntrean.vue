@@ -4,7 +4,7 @@
       <h1 class="text-green-600 text-2xl font-bold">DAFTAR ANTREAN</h1>
     </div>
 
-    <div class="flex border-b mb-6">
+    <div class="flex mb-6">
       <div
         v-for="tab in tabs"
         :key="tab"
@@ -65,8 +65,8 @@ import axios from 'axios'
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-const tabs = ['Menunggu', 'Dilayani', 'Selesai', 'Skip']
-const activeTab = ref('Menunggu')
+const tabs = ['MENUNGGU', 'DILAYANI', 'SELESAI', 'SKIP']
+const activeTab = ref('MENUNGGU')
 const antrean = ref([])
 const loading = ref(false)
 
@@ -75,16 +75,16 @@ const fetchData = async () => {
   let endpoint = ''
 
   switch (activeTab.value) {
-    case 'Menunggu':
+    case 'MENUNGGU':
       endpoint = `${baseUrl}/antrian/belum-terlayani`
       break
-    case 'Dilayani':
+    case 'DILAYANI':
       endpoint = `${baseUrl}/antrian/dilayani`
       break
-    case 'Selesai':
+    case 'SELESAI':
       endpoint = `${baseUrl}/antrian/terlayani`
       break
-    case 'Skip':
+    case 'SKIP':
       endpoint = `${baseUrl}/antrian/dilewati`
       break
   }

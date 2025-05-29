@@ -63,11 +63,9 @@ const handleLogin = async () => {
       const token = response.data.access_token;
       const role = response.data.user.role;
 
-      // Simpan ke localStorage
       localStorage.setItem('access_token', token);
       localStorage.setItem('user_role', role);
 
-      // Redirect berdasarkan role
       if (role === 'admin') {
         router.push({ name: 'AdminService' });
       } else if (role === 'cs') {

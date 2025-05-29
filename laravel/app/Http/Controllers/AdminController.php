@@ -15,6 +15,17 @@ use App\Models\CustomerService;
 
 class AdminController extends Controller
 {
+    //Menampilkan semua user
+    public function index()
+    {
+        $users = User::all();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $users
+        ]);
+    }
+
     public function addUser(Request $request)
     {
         try {
@@ -27,15 +38,13 @@ class AdminController extends Controller
             ]);
 
             $data['password'] = Hash::make($data['password']);
-
             $data['role'] = 'cs';
 
             $user = User::create($data);
-
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
-                "message" => "Registrasi Berhasil",
+                "message" => "Berhasil Tambah User",
                 "access_token" => $token,
                 "token_type" => "Bearer"
             ], 201);
@@ -51,26 +60,15 @@ class AdminController extends Controller
         if (!$user) {
             return response()->json(['message' => 'User tidak ditemukan'], 404);
         }
-
         if ($user->role === 'admin') {
             return response()->json(['message' => 'User admin tidak dapat dihapus'], 403);
         }
-
         $user->delete();
 
         return response()->json(['message' => 'User berhasil dihapus']);
     }
 
-    public function index()
-    {
-        $users = User::all();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $users
-        ]);
-    }
-
+    //Menampilkan semua riwayat antrian (ADMIN)
     public function showMenunggu()
     {
         $antrian = Customer::with(['customerService.service'])
@@ -112,6 +110,7 @@ class AdminController extends Controller
             'data' => $antrian,
         ]);
     }
+    
     public function showSkip()
     {
         $antrian = Customer::with(['customerService.service'])
@@ -126,32 +125,30 @@ class AdminController extends Controller
         ]);
     }
 
+    //controller Service relasi dengan Customer Service
     public function storeService(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'service' => 'required|string|max:255',
             'prefix' => 'required|string|max:5|alpha',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // maksimal 2MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['status' => 'error', 'message' => $validator->errors()], 422);
         }
 
-        // Simpan gambar jika ada
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('services', 'public');
         }
 
-        // Simpan Service
         $service = Service::create([
             'service' => $request->service,
             'prefix' => strtoupper($request->prefix),
             'image' => $imagePath,
         ]);
 
-        // Tambahkan otomatis CustomerService
         $customerService = CustomerService::create([
             'service_id' => $service->id,
             'user_id' => null,
@@ -187,7 +184,6 @@ class AdminController extends Controller
             return response()->json(['status' => 'error', 'message' => $validator->errors()], 422);
         }
 
-        // Ganti gambar jika ada
         if ($request->hasFile('image')) {
             if ($service->image && Storage::disk('public')->exists($service->image)) {
                 Storage::disk('public')->delete($service->image);
@@ -197,12 +193,10 @@ class AdminController extends Controller
             $service->image = $imagePath;
         }
 
-        // Update service
         $service->service = $request->service;
         $service->prefix = strtoupper($request->prefix);
         $service->save();
 
-        // Sinkronisasi dengan tabel customer_services
         CustomerService::where('service_id', $service->id)->update([
             'name' => $service->service,
             'prefix' => $service->prefix
@@ -222,14 +216,11 @@ class AdminController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Layanan tidak ditemukan'], 404);
         }
 
-        // Hapus gambar jika ada
         if ($service->image && Storage::disk('public')->exists($service->image)) {
             Storage::disk('public')->delete($service->image);
         }
 
-        // Hapus relasi di customer_services
         CustomerService::where('service_id', $service->id)->delete();
-
         $service->delete();
 
         return response()->json([

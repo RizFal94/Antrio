@@ -4,15 +4,15 @@
       <h1 class="text-green-600 text-2xl font-bold">DAFTAR ANTREAN</h1>
     </div>
 
-    <div class="flex border-b mb-6">
+    <div class="flex mb-6">
       <div
         v-for="tab in tabs"
         :key="tab"
         @click="changeTab(tab)"
         class="flex-1 text-center pb-4 px-4 font-medium cursor-pointer"
         :class="{
-          'border-b-2 border-green-600 text-green-600': activeTab === tab,
-          'text-green-900': activeTab !== tab
+          'border-b-3 border-green-600 text-green-600 text-1xl': activeTab === tab,
+          'text-green-900 text-1xl': activeTab !== tab
         }"
       >
         {{ tab }}
@@ -69,8 +69,8 @@ import axios from 'axios'
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL
 
-const tabs = ['Menunggu', 'Dilayani', 'Selesai', 'Skip']
-const activeTab = ref('Menunggu')
+const tabs = ['MENUNGGU', 'DILAYANI', 'SELESAI', 'SKIP']
+const activeTab = ref('MENUNGGU')
 const antrean = ref([])
 const loading = ref(false)
 
@@ -79,16 +79,16 @@ const fetchData = async () => {
   let endpoint = ''
 
   switch (activeTab.value) {
-    case 'Menunggu':
+    case 'MENUNGGU':
       endpoint = `${baseUrl}/admin/antrian/belum-terlayani`
       break
-    case 'Dilayani':
+    case 'DILAYANI':
       endpoint = `${baseUrl}/admin/antrian/dilayani`
       break
-    case 'Selesai':
+    case 'SELESAI':
       endpoint = `${baseUrl}/admin/antrian/terlayani`
       break
-    case 'Skip':
+    case 'SKIP':
       endpoint = `${baseUrl}/admin/antrian/dilewati`
       break
   }
@@ -98,7 +98,7 @@ const fetchData = async () => {
     antrean.value = (response.data.data || []).sort((a, b) => {
       const dateA = new Date(a.tanggal)
       const dateB = new Date(b.tanggal)
-      return dateB - dateA // Urut dari terbaru ke lama
+      return dateB - dateA
     })
   } catch (error) {
     console.error('Gagal memuat data antrean admin:', error)

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Exception;
 
 class AuthController extends Controller
 {
@@ -42,6 +42,7 @@ class AuthController extends Controller
         }
     }
 
+    //Mengambil response login
     public function me(Request $request)
     {
         $user = $request->user();
@@ -50,7 +51,6 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // Ambil CS yang aktif dari user (jika ada)
         $activeCs = $user->customerService()->where('status', true)->first();
 
         return response()->json([
@@ -70,18 +70,14 @@ class AuthController extends Controller
         try {
             $user = $request->user();
 
-            // Nonaktifkan CS jika ada yang aktif
             $cs = $user->customerService()->where('status', true)->first();
-
             if ($cs) {
-                // Set status ke false dan hapus user_id
                 $cs->update([
                     'status' => false,
                     'user_id' => null
                 ]);
             }
 
-            // Hapus token akses
             $user->currentAccessToken()->delete();
 
             return response()->json(["message" => "Berhasil Logout"], 200);

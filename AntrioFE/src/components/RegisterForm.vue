@@ -63,7 +63,6 @@
 <script setup>
   import router from '@/router';
   import { ref } from 'vue'
-  // import axios from 'axios'
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 

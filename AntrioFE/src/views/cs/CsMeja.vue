@@ -67,7 +67,6 @@ const userId = localStorage.getItem('user_id')
 const fetchCustomerServices = async () => {
   try {
     const response = await axios.get(`${baseUrl}/customer-service/all`)
-    // Urutkan data berdasarkan id ascending (dari kecil ke besar)
     customerServices.value = response.data.sort((a, b) => a.id - b.id)
   } catch (error) {
     console.error('Gagal memuat data customer service:', error)
@@ -82,7 +81,6 @@ const aktifkan = async (id) => {
       }
     });
 
-    // Simpan user_id dari response ke localStorage jika ada
     const userId = response.data?.data?.user_id
     if (userId) {
       localStorage.setItem('user_id', userId)
