@@ -14,4 +14,5 @@ KONFIGURASI FRONTEND:
 2. npm install vue-router
 3. npm install axios
 4. npm install tailwindcss @tailwindcss/vite
-5. npm run dev
+5. npm i bootstrap-icons
+6. npm run dev
