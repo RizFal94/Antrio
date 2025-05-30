@@ -1,4 +1,6 @@
-ini adalah aplikasi antrian online berbasis backend laravel dan frontend vue 3 dengan menggunakan REST API
+ANTRIO (Aplikasi Antrian Online)
+
+Aplikasi ambil antrian secara online berbasis backend laravel dan frontend vue 3 dengan menggunakan REST API
 
 KONFIGURASI BACKEND (laravel):
 1. composer install
